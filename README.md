@@ -8,152 +8,162 @@ To write a program to implement the the Logistic Regression Using Gradient Desce
 2. Anaconda – Python 3.7 Installation / Jupyter notebook
 
 ## Algorithm
-```
-1.Use the standard libraries in python for finding linear regression.
+1.Import Libraries: Import the necessary libraries - pandas, numpy, and matplotlib.pyplot.
 
-2.Set variables for assigning dataset values.
+2.Load Dataset: Load the dataset using pd.read_csv.
 
-3.Import linear regression from sklearn.
+3.Remove irrelevant columns (sl_no, salary).
 
-4.Predict the values of array.
+4.Convert categorical variables to numerical using cat.codes.
 
-5.Calculate the accuracy, confusion and classification report by importing the required modules from sklearn.
+5.Separate features (X) and target variable (Y).
 
-6.Obtain the graph.
-```
+6.Define Sigmoid Function: Define the sigmoid function.
+
+7.Define Loss Function: Define the loss function for logistic regression.
+
+8.Define Gradient Descent Function: Implement the gradient descent algorithm to optimize the parameters.
+
+9.Training Model: Initialize theta with random values, then perform gradient descent to minimize the loss and obtain the optimal parameters.
+
+10.Define Prediction Function: Implement a function to predict the output based on the learned parameters.
+
+11.Evaluate Accuracy: Calculate the accuracy of the model on the training data.
+
+12.Predict placement status for a new student with given feature values (xnew).
+
+13.Print Results: Print the predictions and the actual values (Y) for comparison.
+ 
 
 ## Program:
 ```
+/*
 Program to implement the the Logistic Regression Using Gradient Descent.
 Developed by: Karthikeyan R
-RegisterNumber: 212222240045
+RegisterNumber:  212222240045
+*/
+```
+```
+#import modules
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import optimize
 
-data = np.loadtxt("/content/ex2data2.txt",delimiter = ',')
-x= data[:,[0,1]]
-y= data[:,2]
-print('Array Value of x:')
-x[:5]
+dataset = pd.read_csv("C:/classes/ML/New folder/Placement_Data.csv")
+dataset
 
-print('Array Value of y:')
-y[:5]
+#dropping the serial no and salary col
+dataset = dataset.drop('sl_no',axis=1)
+#dataset = dataset.drop('sl_no',axis=1)
 
-print('Exam 1-Score graph')
-plt.figure()
-plt.scatter(x[y == 1][:,0],x[y == 1][:,1],label='Admitted')
-plt.scatter(x[y == 0][:,0],x[y == 0][:,1],label=' Not Admitted')
-plt.xlabel('Exam 1 score')
-plt.ylabel('Exam 2 score')
-plt.legend()
-plt.show()
+#catogorising col for further labegling
+dataset["gender"] = dataset["gender"].astype('category')
+dataset["ssc_b"] = dataset["ssc_b"].astype('category')
+dataset["hsc_b"] = dataset["hsc_b"].astype('category')
+dataset["degree_t"] = dataset["degree_t"].astype('category')
+dataset["workex"] = dataset["workex"].astype('category')
+dataset["specialisation"] = dataset["specialisation"].astype('category')
+dataset["status"] = dataset["status"].astype('category')
+dataset["hsc_s"] = dataset["hsc_s"].astype('category')
+dataset.dtypes
 
+#labelling the colums
+dataset["gender"] = dataset["gender"].cat.codes
+dataset["ssc_b"] = dataset["ssc_b"].cat.codes
+dataset["hsc_b"] = dataset["hsc_b"].cat.codes
+dataset["degree_t"] = dataset["degree_t"].cat.codes
+dataset["workex"] = dataset["workex"].cat.codes
+dataset["specialisation"] = dataset["specialisation"].cat.codes
+dataset["status"] = dataset["status"].cat.codes
+dataset["hsc_s"] = dataset["hsc_s"].cat.codes
 
+#display dataset
+dataset
+
+#selecting the features and labels
+X = dataset.iloc[:, :-1].values
+Y = dataset.iloc[:, -1].values
+
+#display dependent variables
+Y
+
+#initialize the model parameter
+theta = np.random.randn(X.shape[1])
+y=Y
+
+#define the sigmoid function 
 def sigmoid(z):
-  return 1/(1+np.exp(-z))
-  
-print('Sigmoid function graph: ')
-plt.plot()
-x_plot = np.linspace(-10,10,100)
-plt.plot(x_plot,sigmoid(x_plot))
-plt.show()
+    return 1/(1+np.exp(-z))
 
+#define the loss function 
+def loss(theta,X,y):
+    h = sigmoid(X.dot(theta))
+    return -np.sum(y * np.log(h) + (1-y) * np.log(1-h))
 
-def costFunction(theta,x,y):
-  h = sigmoid(np.dot(x,theta))
-  j = -(np.dot(y,np.log(h))+np.dot(1-y,np.log(1-h)))/x.shape[0]
-  grad = np.dot(x.T,h-y)/x.shape[0]
-  return j,grad
+#define the gradient descent algorithm
+def gradient_descent (theta, X, y, alpha, num_iterations):
+    m = len(y)
+    for i in range(num_iterations):
+        h = sigmoid(X.dot(theta))
+        gradient = X.T.dot(h-y) / m
+        theta -= alpha * gradient
+    return theta
 
+#train the model
+theta =  gradient_descent(theta, X, y, alpha=0.01, num_iterations=1000)
 
-print('X_train_grad_value: ')
-x_train = np.hstack((np.ones((x.shape[0],1)),x))
-theta = np.array([0,0,0])
-j,grad = costFunction(theta,x_train,y)
-print(j)
-print(grad)
+# make the predictions
+def predict(theta, X): 
+    h = sigmoid(X.dot(theta))
+    y_pred = np.where(h >= 0.5, 1, 0)
+    return y_pred
 
+y_pred = predict(theta, X)
 
-print('y_train_grad_value: ')
-x_train=np.hstack((np.ones((x.shape[0],1)),x))
-theta=np.array([-24,0.2,0.2])
-j,grad=costFunction(theta,x_train,y)
-print(j)
-print(grad)
+#evaluate the model
+accuracy = np.mean(y_pred.flatten() == y)
+print("Accuracy : ",accuracy)
+print(y_pred)
+print(Y)
 
-def cost(theta,x,y):
-  h = sigmoid(np.dot(x,theta))
-  j = -(np.dot(y,np.log(h))+np.dot(1-y,np.log(1-h)))/x.shape[0]
-  return j
+xnew = np.array([[0,87,0,95,0,2,78,2,0,0,1,0]])
+y_prednew = predict(theta,xnew)
+print(y_prednew)
 
+xnew = np.array([[0,0,0,0,0,2,8,2,0,0,1,0]])
+y_prednew = predict(theta,xnew)
+print(y_prednew)
 
-def cost(theta,x,y):
-  h = sigmoid(np.dot(x,theta))
-  j = -(np.dot(y,np.log(h))+np.dot(1-y,np.log(1-h)))/x.shape[0]
-  return j
-
-print('res.x:')
-x_train = np.hstack((np.ones((x.shape[0],1)),x))
-theta = np.array([0,0,0])
-res = optimize.minimize(fun=cost,x0=theta,args=(x_train,y),method='Newton-CG',jac=gradient)
-print(res.fun)
-print(res.x)
-
-
-def plotDecisionBoundary(theta,x,y):
-  x_min,x_max = x[:,0].min()-1,x[:,0].max()+1
-  y_min,y_max = x[:,1].min()-1,x[:,1].max()+1
-  xx,yy = np.meshgrid(np.arange(x_min,x_max,0.1),np.arange(y_min,y_max,0.1))
-  x_plot = np.c_[xx.ravel(),yy.ravel()]
-  x_plot = np.hstack((np.ones((x_plot.shape[0],1)),x_plot))
-  y_plot = np.dot(x_plot,theta).reshape(xx.shape)
-  plt.figure()
-  plt.scatter(x[y == 1][:,0],x[y == 1][:,1],label='Admitted')
-  plt.scatter(x[y == 0][:,0],x[y == 0][:,1],label='Not Admitted')
-  plt.contour(xx,yy,y_plot,levels=[0])
-  plt.xlabel('Exam  1 score')
-  plt.ylabel('Exam 2 score')
-  plt.legend()
-  plt.show()
-
-print('DecisionBoundary-graph for exam score: ')
-plotDecisionBoundary(res.x,x,y)
-
-print('Proability value: ')
-prob=sigmoid(np.dot(np.array([1,45,85]),res.x))
-print(prob)
-
-
-def predict(theta,x):
-  x_train = np.hstack((np.ones((x.shape[0],1)),x))
-  prob = sigmoid(np.dot(x_train,theta))
-  return (prob >=0.5).astype(int)
-
-
-print('Prediction value of mean:')
-np.mean(predict(res.x,x)==y)
 ```
+
 ## Output:
-![ml5](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/6e8fa5b3-1f81-48d1-b3f4-cabcb38b5e49)
 
-![ml5 1](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/9eca192f-707b-4a48-ae07-ee40947bb9a7)
+### Dataset:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/669d8f53-69de-4b43-be44-994d10eb6f34)
 
-![ml5 2](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/230bf0a6-dcd1-44d6-a24a-f4ab17d9b069)
+### dataset.dtypes:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/ebb56075-ffb6-43f7-ba14-7d46c180d855)
 
-![ml5 3](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/22c580de-22c6-4b38-9b17-7049dcb1c47c)
+### labeled_dataset:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/914e5f32-a0b7-43be-a6ea-42bcd2585405)
 
-![ml5 4](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/ffcf63a9-1941-419a-9662-4ae7396a0386)
+### Dependent variable Y:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/52dff80f-9d16-4ea1-be8c-3734c0a1ac7a)
 
-![ml5 5](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/f2655fc4-ce99-438c-b419-b8d92e5084e0)
+### Accuracy:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/498236c3-b821-45b6-9cea-bb1f41201deb)
 
-![ml5 6](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/f3a19681-1476-490b-9c3e-b3bb751003dc)
+### y_pred:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/1f576f39-94c0-4d2f-be21-2ea240844bd0)
 
-![ml5 7](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/33c6707c-f303-4860-9e4b-ce069743ec2e)
+### Y:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/4de6cec9-da00-49a4-81d4-b75cf8e33986)
 
-![ml5 8](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/ef834a1d-d3a6-436f-be5a-e30ed061bb35)
+### y_prednew:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/4159993b-852d-4ef6-952e-65ebc922b8e2)
 
-![ml5 9](https://github.com/karthikeyan-R16/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/119421232/e6f11621-5e07-4ce7-83bc-9071d98b8401)
+### y_prednew:
+![image](https://github.com/Ashwinkumar-03/-Implementation-of-Logistic-Regression-Using-Gradient-Descent/assets/118663725/8a496525-9f30-468e-bc9b-83c68e3d7bd6)
 
 ## Result:
 Thus the program to implement the the Logistic Regression Using Gradient Descent is written and verified using python programming.
